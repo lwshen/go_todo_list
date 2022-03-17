@@ -24,4 +24,5 @@ func Database(connstring string) {
 	db.DB().SetMaxOpenConns(100) //最大连接数
 	db.DB().SetConnMaxLifetime(time.Second * 30)
 	DB = db
+	migration()
 }
