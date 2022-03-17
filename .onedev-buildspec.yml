@@ -14,13 +14,47 @@ jobs:
     image: alpine/git:1.0.33
     interpreter: !DefaultInterpreter
       commands:
-        - git config --global http.proxy 'socks5://192.168.31.2:1080'
-        - git push -f https://lwshen:@secrets:github-token@@@github.com/lwshen/go_todo_list.git
-          HEAD:@ref@
+      - git config --global http.proxy 'socks5://192.168.31.2:1080'
+      - git push -f https://lwshen:@secrets:github-token@@@github.com/lwshen/go_todo_list.git
+        HEAD:@ref@
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   triggers:
   - !BranchUpdateTrigger {}
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  cpuRequirement: 250
+  memoryRequirement: 256
+  timeout: 3600
+- name: golang ci
+  steps:
+  - !CheckoutStep
+    name: checkout
+    cloneCredential: !DefaultCredential {}
+    withLfs: false
+    withSubmodules: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: build
+    runInContainer: true
+    image: golang:1.17-bullseye
+    interpreter: !DefaultInterpreter
+      commands:
+      - go env -w GO111MODULE=on
+      - go env -w  GOPROXY=https://goproxy.cn,direct
+      - go mod download
+      - go build -race -o @project_path@/todoList
+    useTTY: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !PublishArtifactStep
+    name: publish artifacts
+    artifacts: '@project_path@/todoList'
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  triggers:
+  - !PullRequestUpdateTrigger {}
+  - !BranchUpdateTrigger
+    branches: master
   retryCondition: never
   maxRetries: 3
   retryDelay: 30
