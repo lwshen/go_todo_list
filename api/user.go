@@ -14,3 +14,13 @@ func UserRegister(c *gin.Context) {
 		c.JSON(400, err.Error())
 	}
 }
+
+func UserLogin(c *gin.Context) {
+	var userLogin service.UserService
+	if err := c.ShouldBind(&userLogin); err == nil {
+		res := userLogin.Login()
+		c.JSON(200, res)
+	} else {
+		c.JSON(400, err.Error())
+	}
+}

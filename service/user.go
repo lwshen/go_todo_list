@@ -1,7 +1,9 @@
 package service
 
 import (
+	"github.com/jinzhu/gorm"
 	"todo_list/model"
+	"todo_list/pkg/utils"
 	"todo_list/serializer"
 )
 
@@ -38,5 +40,43 @@ func (service *UserService) Register() serializer.Response {
 	return serializer.Response{
 		Status: 200,
 		Msg:    "用户注册成功",
+	}
+}
+
+func (service *UserService) Login() serializer.Response {
+	var user model.User
+	if err := model.DB.Model(&model.User{}).Where("username=?", service.Username).First(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return serializer.Response{
+				Status: 400,
+				Msg:    "用户不存在",
+			}
+		}
+		return serializer.Response{
+			Status: 500,
+			Msg:    "数据库错误",
+		}
+	}
+	if user.CheckPassword(service.Password) == false {
+		return serializer.Response{
+			Status: 400,
+			Msg:    "密码错误",
+		}
+	}
+	//发送一个token
+	token, err := utils.GenerateToken(user.ID, user.Username)
+	if err != nil {
+		return serializer.Response{
+			Status: 500,
+			Msg:    "Token签发错误",
+		}
+	}
+	return serializer.Response{
+		Status: 200,
+		Data: serializer.TokenData{
+			User:  serializer.BuildUser(&user),
+			Token: token,
+		},
+		Msg: "登陆成功",
 	}
 }
