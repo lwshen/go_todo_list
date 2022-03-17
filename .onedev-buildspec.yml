@@ -1,0 +1,27 @@
+version: 15
+jobs:
+- name: Sync Github
+  steps:
+  - !CheckoutStep
+    name: Checkout
+    cloneCredential: !DefaultCredential {}
+    withLfs: false
+    withSubmodules: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: Sync
+    runInContainer: true
+    image: alpine/git:1.0.7
+    interpreter: !DefaultInterpreter
+      commands:
+      - git push -f https://lwshen:@secrets:github-token@@@github.com/lwshen/go_todo_list.git
+    useTTY: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  triggers:
+  - !BranchUpdateTrigger {}
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  cpuRequirement: 250
+  memoryRequirement: 256
+  timeout: 3600
