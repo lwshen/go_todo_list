@@ -1,4 +1,4 @@
-package todo_list
+package main
 
 import "todo_list/conf"
 

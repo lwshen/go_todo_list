@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -12,7 +13,7 @@ var DB *gorm.DB
 func Database(connstring string) {
 	db, err := gorm.Open("mysql", connstring)
 	if err != nil {
-		panic("Mysql数据库连接错误")
+		panic(fmt.Sprintf("Mysql数据库连接错误 %s", err))
 	}
 	db.LogMode(true)
 	if gin.Mode() == "release" {
