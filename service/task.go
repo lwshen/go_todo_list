@@ -3,6 +3,7 @@ package service
 import (
 	"time"
 	"todo_list/model"
+	"todo_list/pkg/e"
 	"todo_list/serializer"
 )
 
@@ -36,5 +37,28 @@ func (service *CreateTaskService) Create(id uint) serializer.Response {
 	return serializer.Response{
 		Status: code,
 		Msg:    "创建成功",
+	}
+}
+
+type ShowTaskService struct {
+}
+
+func (service *ShowTaskService) Show(uid uint, tid string) serializer.Response {
+	code := e.SUCCESS
+	var user model.User
+	model.DB.First(&user, uid)
+	var task model.Task
+	err := model.DB.First(&task, tid).Error
+	if err != nil {
+		code = e.ERROR
+		return serializer.Response{
+			Status: code,
+			Msg:    "查询失败",
+		}
+	}
+	//todo: 判断备忘录是否属于当前用户
+	return serializer.Response{
+		Status: code,
+		Data:   serializer.BuildTask(task),
 	}
 }
