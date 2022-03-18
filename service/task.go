@@ -111,3 +111,22 @@ func (service *CreateUpdateTaskService) Update(uid uint, tid string) serializer.
 		Msg:    "更新成功",
 	}
 }
+
+type SearchTaskService struct {
+	Info string `json:"info" form:"info"`
+	ListTaskService
+}
+
+func (service *SearchTaskService) Search(uid uint) serializer.Response {
+	var tasks []model.Task
+	var count uint
+	if service.PageSize == 0 {
+		service.PageSize = 15
+	}
+
+	model.DB.Model(&model.Task{}).Preload("User").Where("uid=?", uid).
+		Where("title LIKE ? OR content LIKE ?", "%"+service.Info+"%", "%"+service.Info+"%").
+		Count(&count).Limit(service.PageSize).Offset((service.PageNum - 1) * service.PageSize).Find(&tasks)
+
+	return serializer.BuildListResponse(serializer.BuildTasks(tasks), count)
+}
