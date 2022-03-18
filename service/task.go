@@ -130,3 +130,35 @@ func (service *SearchTaskService) Search(uid uint) serializer.Response {
 
 	return serializer.BuildListResponse(serializer.BuildTasks(tasks), count)
 }
+
+type DeleteTaskService struct {
+}
+
+func (service *DeleteTaskService) Delete(uid uint, tid string) serializer.Response {
+	var user model.User
+	code := e.SUCCESS
+	model.DB.First(&user, uid)
+	var task model.Task
+	err := model.DB.First(&task, tid).Error
+	if err != nil {
+		code = e.ERROR
+		return serializer.Response{
+			Status: code,
+			Msg:    "查询失败",
+		}
+	}
+
+	model.DB.First(&task, tid)
+	//todo: 判断当前task是否属于该用户
+	err = model.DB.Delete(&task, tid).Error
+	if err != nil {
+		return serializer.Response{
+			Status: e.ERROR,
+			Msg:    "删除失败",
+		}
+	}
+	return serializer.Response{
+		Status: e.SUCCESS,
+		Msg:    "删除成功",
+	}
+}
