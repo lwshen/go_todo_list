@@ -27,11 +27,11 @@ DbName = todo_list_db
 ### 项目运行
 
 1. 需要修改相应的配置，并新建`todo_list_db`数据库
-
 2. 下载依赖
-
-```go mod download```
-
+```
+go mod download
+```
 3. 运行项目
-
-```go run main.go```
+```
+go run main.go
+```
