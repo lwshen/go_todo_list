@@ -7,13 +7,13 @@ import (
 	"todo_list/serializer"
 )
 
-type CreateTaskService struct {
+type CreateUpdateTaskService struct {
 	Title   string `json:"title" form:"title"`
 	Content string `json:"content" form:"content"`
 	Status  int    `json:"status" form:"status"` //0是未做 1是已做
 }
 
-func (service *CreateTaskService) Create(id uint) serializer.Response {
+func (service *CreateUpdateTaskService) Create(id uint) serializer.Response {
 	var user model.User
 	code := e.SUCCESS
 	model.DB.First(&user, id)
@@ -79,4 +79,35 @@ func (service *ListTaskService) List(uid uint) serializer.Response {
 		Limit(service.PageSize).Offset((service.PageNum - 1) * service.PageSize).Find(&tasks)
 
 	return serializer.BuildListResponse(serializer.BuildTasks(tasks), count)
+}
+
+func (service *CreateUpdateTaskService) Update(uid uint, tid string) serializer.Response {
+	var user model.User
+	code := e.SUCCESS
+	model.DB.First(&user, uid)
+	var task model.Task
+	err := model.DB.First(&task, tid).Error
+	if err != nil {
+		code = e.ERROR
+		return serializer.Response{
+			Status: code,
+			Msg:    "查询失败",
+		}
+	}
+	task.Title = service.Title
+	task.Content = service.Content
+	task.Status = service.Status
+	err = model.DB.Save(&task).Error
+	if err != nil {
+		code = e.ERROR
+		return serializer.Response{
+			Status: code,
+			Msg:    "更新备忘录失败",
+		}
+	}
+	return serializer.Response{
+		Status: code,
+		Data:   serializer.BuildTask(task),
+		Msg:    "更新成功",
+	}
 }
