@@ -30,3 +30,15 @@ func ShowTask(c *gin.Context) {
 		c.JSON(400, ErrorResponse(err))
 	}
 }
+
+func ListTask(c *gin.Context) {
+	var listTask service.ListTaskService
+	cliams, _ := utils.ParseToken(c.GetHeader("Authorization"))
+	if err := c.ShouldBind(&listTask); err == nil {
+		res := listTask.List(cliams.Id)
+		c.JSON(200, res)
+	} else {
+		logging.Error(err)
+		c.JSON(400, ErrorResponse(err))
+	}
+}
