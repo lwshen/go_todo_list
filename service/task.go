@@ -15,7 +15,7 @@ type CreateTaskService struct {
 
 func (service *CreateTaskService) Create(id uint) serializer.Response {
 	var user model.User
-	code := 200
+	code := e.SUCCESS
 	model.DB.First(&user, id)
 	task := model.Task{
 		User:      user,
@@ -28,7 +28,7 @@ func (service *CreateTaskService) Create(id uint) serializer.Response {
 	}
 	err := model.DB.Create(&task).Error
 	if err != nil {
-		code = 500
+		code = e.ERROR
 		return serializer.Response{
 			Status: code,
 			Msg:    "创建备忘录失败",

@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/jinzhu/gorm"
 	"todo_list/model"
+	"todo_list/pkg/e"
 	"todo_list/pkg/utils"
 	"todo_list/serializer"
 )
@@ -18,7 +19,7 @@ func (service *UserService) Register() serializer.Response {
 	model.DB.Model(&model.User{}).Where("username=?", service.Username).First(&user).Count(&count)
 	if count == 1 {
 		return serializer.Response{
-			Status: 400,
+			Status: e.InvalidParams,
 			Msg:    "当前用户名已存在",
 		}
 	}
@@ -26,19 +27,19 @@ func (service *UserService) Register() serializer.Response {
 	//密码加密
 	if err := user.SetPassword(service.Password); err != nil {
 		return serializer.Response{
-			Status: 400,
+			Status: e.InvalidParams,
 			Msg:    err.Error(),
 		}
 	}
 	//创建用户
 	if err := model.DB.Create(&user).Error; err != nil {
 		return serializer.Response{
-			Status: 500,
+			Status: e.ERROR,
 			Msg:    "数据库操作错误",
 		}
 	}
 	return serializer.Response{
-		Status: 200,
+		Status: e.SUCCESS,
 		Msg:    "用户注册成功",
 	}
 }
@@ -48,18 +49,18 @@ func (service *UserService) Login() serializer.Response {
 	if err := model.DB.Model(&model.User{}).Where("username=?", service.Username).First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return serializer.Response{
-				Status: 400,
+				Status: e.InvalidParams,
 				Msg:    "用户不存在",
 			}
 		}
 		return serializer.Response{
-			Status: 500,
+			Status: e.ERROR,
 			Msg:    "数据库错误",
 		}
 	}
 	if user.CheckPassword(service.Password) == false {
 		return serializer.Response{
-			Status: 400,
+			Status: e.InvalidParams,
 			Msg:    "密码错误",
 		}
 	}
@@ -67,12 +68,12 @@ func (service *UserService) Login() serializer.Response {
 	token, err := utils.GenerateToken(user.ID, user.Username)
 	if err != nil {
 		return serializer.Response{
-			Status: 500,
+			Status: e.ERROR,
 			Msg:    "Token签发错误",
 		}
 	}
 	return serializer.Response{
-		Status: 200,
+		Status: e.SUCCESS,
 		Data: serializer.TokenData{
 			User:  serializer.BuildUser(&user),
 			Token: token,
