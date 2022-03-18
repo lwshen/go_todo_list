@@ -56,7 +56,12 @@ func (service *ShowTaskService) Show(uid uint, tid string) serializer.Response {
 			Msg:    "查询失败",
 		}
 	}
-	//todo: 判断备忘录是否属于当前用户
+	if task.Uid != uid {
+		return serializer.Response{
+			Status: e.ERROR,
+			Msg:    "权限错误",
+		}
+	}
 	return serializer.Response{
 		Status: code,
 		Data:   serializer.BuildTask(task),
@@ -92,6 +97,12 @@ func (service *CreateUpdateTaskService) Update(uid uint, tid string) serializer.
 		return serializer.Response{
 			Status: code,
 			Msg:    "查询失败",
+		}
+	}
+	if task.Uid != uid {
+		return serializer.Response{
+			Status: e.ERROR,
+			Msg:    "权限错误",
 		}
 	}
 	task.Title = service.Title
@@ -149,7 +160,12 @@ func (service *DeleteTaskService) Delete(uid uint, tid string) serializer.Respon
 	}
 
 	model.DB.First(&task, tid)
-	//todo: 判断当前task是否属于该用户
+	if task.Uid != uid {
+		return serializer.Response{
+			Status: e.ERROR,
+			Msg:    "权限错误",
+		}
+	}
 	err = model.DB.Delete(&task, tid).Error
 	if err != nil {
 		return serializer.Response{
