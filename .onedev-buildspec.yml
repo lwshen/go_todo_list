@@ -14,8 +14,7 @@ jobs:
     image: alpine/git:1.0.33
     interpreter: !DefaultInterpreter
       commands:
-      - git config --global http.proxy 'socks5://192.168.31.2:1080'
-      - git push -f https://lwshen:@secrets:github-token@@@github.com/lwshen/go_todo_list.git
+      - git push -f https://lwshen:@secrets:github-token@@@github.slw.im/lwshen/go_todo_list.git
         HEAD:@ref@
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
